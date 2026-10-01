@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+		<link rel="icon" type="image/x-icon" href="favicon.ico">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="mobile-web-app-capable" content="yes">
+		<link href="plugins/bootstrap.min.css" rel="stylesheet">
+		<script src="plugins/bootstrap.bundle.min.js"></script>
+		<link href="fonts.css" rel="stylesheet" type="text/css" />
+		<link href="style.css" rel="stylesheet" type="text/css" />
+
+		<title>新感覚</title>
+	</head>
+
+
+	<body class="development-mode">
+
+		<main class="max-size">
+
+			<section id="page1" class="transition-duration-1000ms">
+				<div class="row g-0 w-100 h-100">
+					<aside class="col-4 ball-controls d-flex align-items-center">
+						<div class="ball-controls-inner">
+							<div class="ball-control-groups">
+								<button id="music-toggle" class="ball-option-button music-toggle-button" type="button" lang="ja" aria-pressed="false" disabled>開始</button>
+								<div class="ball-option-grid" role="group" aria-label="Synliga bollar">
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="1" aria-pressed="true">いち</button>
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="2" aria-pressed="false">に</button>
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="3" aria-pressed="false">さん</button>
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="4" aria-pressed="false">よん</button>
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="5" aria-pressed="false">ご</button>
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="6" aria-pressed="false">ろく</button>
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="7" aria-pressed="false">なな</button>
+									<button class="ball-option-button ball-count-button" type="button" lang="ja" data-count="8" aria-pressed="false">はち</button>
+								</div>
+								<button id="feeling-toggle" class="ball-option-button feeling-toggle-button" type="button" lang="ja" aria-pressed="false" disabled>新感覚</button>
+								<div class="ball-size-control">
+									<div class="ball-option-grid" role="group" aria-label="Bollstorlek">
+										<button class="ball-option-button ball-size-button" type="button" lang="ja" data-size="48" aria-pressed="false">よんじゅうはち</button>
+										<button class="ball-option-button ball-size-button" type="button" lang="ja" data-size="58" aria-pressed="true">ごじゅうはち</button>
+										<button class="ball-option-button ball-size-button" type="button" lang="ja" data-size="68" aria-pressed="false">ろくじゅうはち</button>
+										<button class="ball-option-button ball-size-button" type="button" lang="ja" data-size="78" aria-pressed="false">ななじゅうはち</button>
+									</div>
+								</div>
+								<div class="ball-speed-control">
+									<div class="ball-option-grid" role="group" aria-label="Bollhastighet i procent">
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="25" aria-pressed="false">二十五</button>
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="50" aria-pressed="false">五十</button>
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="75" aria-pressed="true">七十五</button>
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="100" aria-pressed="false">百</button>
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="125" aria-pressed="false">百二十五</button>
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="150" aria-pressed="false">百五十</button>
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="175" aria-pressed="false">百七十五</button>
+										<button class="ball-option-button ball-speed-button" type="button" lang="ja" data-speed="200" aria-pressed="false">二百</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</aside>
+
+					<div class="col-8 ball-stage d-flex align-items-center justify-content-center">
+						<div id="ball-playfield" class="ball-playfield" aria-label="Bollarnas rörelseyta">
+							<div class="bouncing-circle ball-orange" data-stinger-a="Stinger-9" data-stinger-b="Stinger-17" aria-hidden="true"></div>
+							<div class="bouncing-circle ball-blue" data-stinger-a="Stinger-10" data-stinger-b="Stinger-18" aria-hidden="true" hidden></div>
+							<div class="bouncing-circle ball-green" data-stinger-a="Stinger-11" data-stinger-b="Stinger-19" aria-hidden="true" hidden></div>
+							<div class="bouncing-circle ball-yellow" data-stinger-a="Stinger-12" data-stinger-b="Stinger-20" aria-hidden="true" hidden></div>
+							<div class="bouncing-circle ball-cyan" data-stinger-a="Stinger-13" data-stinger-b="Stinger-21" aria-hidden="true" hidden></div>
+							<div class="bouncing-circle ball-violet" data-stinger-a="Stinger-14" data-stinger-b="Stinger-22" aria-hidden="true" hidden></div>
+							<div class="bouncing-circle ball-pink" data-stinger-a="Stinger-15" data-stinger-b="Stinger-23" aria-hidden="true" hidden></div>
+							<div class="bouncing-circle ball-white" data-stinger-a="Stinger-16" data-stinger-b="Stinger-24" aria-hidden="true" hidden></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+		</main>
+
+
+		<script src="plugins/max.size.js"></script>
+		<script src="waxml.js" data-source="wa.xml"></script>
+		<script src="plugins/script.js"></script>
+		<script src="script.js"></script>
+
+
+	</body>
+</html>
