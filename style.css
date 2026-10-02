@@ -265,12 +265,3 @@ body.production-mode .waxml-open-button {
 		height: 96%;
 	}
 }
-
-@media (max-width: 600px) and (orientation: portrait) {
-	.music-toggle-button,
-	.feeling-toggle-button {
-		min-height: 44px;
-		padding: 8px 4px;
-		font-size: 12px;
-	}
-}
