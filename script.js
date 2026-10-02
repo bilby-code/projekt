@@ -7,6 +7,7 @@
 	let musicMode = "A";
 	let startBallMotion = () => {};
 	let resetToSingleBall = () => {};
+	const debugAudioTriggers = new URLSearchParams(window.location.search).has("debugAudio");
 	const audioTriggerLog = [];
 	const recentTriggerTimes = [];
 	window.audioTriggerLog = audioTriggerLog;
@@ -31,7 +32,7 @@
 		};
 		audioTriggerLog.push(entry);
 		if (audioTriggerLog.length > 1000) audioTriggerLog.shift();
-		console.info("[audio-trigger]", entry);
+		if (debugAudioTriggers) console.info("[audio-trigger]", entry);
 	}
 
 	function updateMusicToggle(isPlaying) {
