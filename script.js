@@ -17,6 +17,8 @@
 	};
 
 	function logAudioTrigger(selector, details = {}) {
+		if (!debugAudioTriggers) return;
+
 		const elapsedMs = performance.now();
 		while (recentTriggerTimes.length && recentTriggerTimes[0] < elapsedMs - 1000) {
 			recentTriggerTimes.shift();
@@ -32,7 +34,7 @@
 		};
 		audioTriggerLog.push(entry);
 		if (audioTriggerLog.length > 1000) audioTriggerLog.shift();
-		if (debugAudioTriggers) console.info("[audio-trigger]", entry);
+		console.info("[audio-trigger]", entry);
 	}
 
 	function updateMusicToggle(isPlaying) {
@@ -56,7 +58,7 @@
 				waxml.stop(`.${musicMode}`);
 				updateMusicToggle(false);
 			} else {
-				logAudioTrigger(`.${musicMode}`, { event: "music-start", mode: musicMode });
+				if (debugAudioTriggers) logAudioTrigger(`.${musicMode}`, { event: "music-start", mode: musicMode });
 				waxml.trig(`.${musicMode}`);
 				updateMusicToggle(true);
 				startBallMotion();
@@ -72,7 +74,7 @@
 			resetToSingleBall();
 			musicMode = musicMode === "A" ? "B" : "A";
 			updatePlayfieldMode();
-			logAudioTrigger(`.${musicMode}`, { event: "feeling-switch", mode: musicMode });
+			if (debugAudioTriggers) logAudioTrigger(`.${musicMode}`, { event: "feeling-switch", mode: musicMode });
 			waxml.trig(`.${musicMode}`);
 			updateMusicToggle(true);
 			startBallMotion();
@@ -315,7 +317,7 @@
 			if (waxmlReady && stinger) {
 				const ball = [...state.circle.classList].find(className => className.startsWith("ball-") && !className.includes("button"));
 				const selector = `#${stinger}`;
-				logAudioTrigger(selector, { event, ball, mode: musicMode });
+				if (debugAudioTriggers) logAudioTrigger(selector, { event, ball, mode: musicMode });
 				waxml.trig(selector);
 			}
 		}
