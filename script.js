@@ -487,5 +487,6 @@
 			button.addEventListener("click", () => selectBallSize(button));
 		});
 		updateVisibleBalls();
+		new ResizeObserver(resizeBalls).observe(playfield);
 	}, { once: true });
 })();

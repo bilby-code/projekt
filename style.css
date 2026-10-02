@@ -173,3 +173,95 @@ body.imusic-loading *.imusic-loading {
 body.production-mode .waxml-open-button {
 	display: none;
 }
+
+@media (orientation: portrait) {
+	main {
+		width: 100vw !important;
+		height: 100vh !important;
+		height: 100dvh !important;
+		top: 0 !important;
+		left: 0 !important;
+		-webkit-transform: none !important;
+		transform: none !important;
+	}
+
+	.ball-controls,
+	.ball-stage {
+		flex: 0 0 auto;
+		width: 100%;
+	}
+
+	.ball-controls {
+		height: 26%;
+		padding: 8px 12px;
+		align-items: flex-end !important;
+	}
+
+	.ball-controls-inner {
+		max-width: none;
+	}
+
+	.ball-control-groups {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-areas:
+			"music feeling"
+			"count count"
+			"size speed";
+		gap: 5px 8px;
+	}
+
+	.music-toggle-button {
+		grid-area: music;
+		margin: 0;
+	}
+
+	.feeling-toggle-button {
+		grid-area: feeling;
+		margin: 0;
+	}
+
+	.ball-control-groups > .ball-option-grid {
+		grid-area: count;
+		grid-template-columns: repeat(8, minmax(0, 1fr));
+		gap: 4px;
+		margin: 0;
+	}
+
+	.ball-size-control {
+		grid-area: size;
+		margin: 0;
+	}
+
+	.ball-size-control .ball-option-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 4px;
+		margin: 0;
+	}
+
+	.ball-speed-control {
+		grid-area: speed;
+		margin: 0;
+	}
+
+	.ball-speed-control .ball-option-grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 4px;
+		margin: 0;
+	}
+
+	.ball-option-button {
+		padding: 5px 1px;
+		font-size: 10px;
+		line-height: 1.15;
+	}
+
+	.ball-stage {
+		height: 74%;
+	}
+
+	.ball-playfield {
+		width: 96%;
+		height: 96%;
+	}
+}
