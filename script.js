@@ -3,6 +3,8 @@
 	const lowPowerMode = new URLSearchParams(window.location.search).has("lowPower");
 	const debugAudioTriggers = new URLSearchParams(window.location.search).has("debugAudio");
 	const rafMode = new URLSearchParams(window.location.search).has("raf");
+	const showFps = new URLSearchParams(window.location.search).has("fps");
+	const flatMode = new URLSearchParams(window.location.search).has("flat");
 	const speedScale = lowPowerMode ? 0.5 : 1;
 	const waxml = window.webAudioXML;
 	const musicToggle = document.querySelector("#music-toggle");
@@ -38,6 +40,49 @@
 		if (audioTriggerLog.length > 1000) audioTriggerLog.shift();
 		console.info("[audio-trigger]", entry);
 	}
+
+	function createFpsMeter() {
+		const element = document.createElement("div");
+		element.className = "fps-meter";
+		document.body.appendChild(element);
+		let windowStart = performance.now();
+		let lastTick = windowStart;
+		let frames = 0;
+		let maxInterval = 0;
+		let workTotal = 0;
+		let workMax = 0;
+		let workCount = 0;
+
+		const tick = now => {
+			frames++;
+			maxInterval = Math.max(maxInterval, now - lastTick);
+			lastTick = now;
+			if (now - windowStart >= 1000) {
+				const fps = frames * 1000 / (now - windowStart);
+				const work = workCount ? `${(workTotal / workCount).toFixed(1)}/${workMax.toFixed(1)} ms` : "-";
+				element.textContent = `${fps.toFixed(0)} fps | max ${maxInterval.toFixed(0)} ms | js ${work}`;
+				windowStart = now;
+				frames = 0;
+				maxInterval = 0;
+				workTotal = 0;
+				workMax = 0;
+				workCount = 0;
+			}
+			requestAnimationFrame(tick);
+		};
+		requestAnimationFrame(tick);
+
+		return {
+			addWork(ms) {
+				workTotal += ms;
+				workMax = Math.max(workMax, ms);
+				workCount++;
+			}
+		};
+	}
+
+	const fpsMeter = showFps ? createFpsMeter() : null;
+	if (flatMode) document.body.classList.add("flat");
 
 	function updateMusicToggle(isPlaying) {
 		musicPlaying = isPlaying;
@@ -529,8 +574,10 @@
 		function frame(now) {
 			const dt = lastFrameTime === null ? 0 : Math.min((now - lastFrameTime) / 1000, 0.1);
 			lastFrameTime = now;
+			const workStart = fpsMeter ? performance.now() : 0;
 			stepSimulation(dt);
 			states.forEach(renderState);
+			if (fpsMeter) fpsMeter.addWork(performance.now() - workStart);
 			requestAnimationFrame(frame);
 		}
 
