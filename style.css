@@ -23,6 +23,7 @@ body {
 	height: 60px;
 	border-radius: 50%;
 	background-color: #F54927;
+	will-change: transform;
 }
 
 .ball-controls {
@@ -119,6 +120,7 @@ body {
 
 .ball-playfield {
 	position: relative;
+	contain: layout paint;
 	width: 94%;
 	height: 90%;
 	overflow: hidden;
