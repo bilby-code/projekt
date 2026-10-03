@@ -6,6 +6,7 @@
 	const showFps = new URLSearchParams(window.location.search).has("fps");
 	const flatMode = new URLSearchParams(window.location.search).has("flat");
 	const speedScale = lowPowerMode ? 0.5 : 1;
+	const motionStartDelayMs = 500;
 	const waxml = window.webAudioXML;
 	const musicToggle = document.querySelector("#music-toggle");
 	const feelingToggle = document.querySelector("#feeling-toggle");
@@ -157,6 +158,7 @@
 	window.addEventListener("load", () => {
 		const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 		let motionStarted = false;
+		let motionStartPending = false;
 		let currentBallCount = Number(countButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.count) || 1;
 		let currentSize = Number(sizeButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.size) || 60;
 		let currentSpeed = (Number(speedButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.speed) / 100 || 1) * speedScale;
@@ -582,11 +584,15 @@
 		}
 
 		startBallMotion = () => {
-			if (motionStarted) return;
-			motionStarted = true;
-			if (reducedMotion) return;
-			if (rafMode) requestAnimationFrame(frame);
-			else animateToNextEvent(simulationVersion);
+			if (motionStarted || motionStartPending) return;
+			motionStartPending = true;
+			// Låter loopen starta innan första träffens stingers tävlar om processorn.
+			setTimeout(() => {
+				motionStarted = true;
+				if (reducedMotion) return;
+				if (rafMode) requestAnimationFrame(frame);
+				else animateToNextEvent(simulationVersion);
+			}, motionStartDelayMs);
 		};
 
 		circles.forEach(circle => applyBallSize(circle, currentSize));
