@@ -1,5 +1,9 @@
 (() => {
 	const audioDisabled = new URLSearchParams(window.location.search).has("noAudio");
+	const lowPowerMode = new URLSearchParams(window.location.search).has("lowPower");
+	const debugAudioTriggers = new URLSearchParams(window.location.search).has("debugAudio");
+	const rafMode = new URLSearchParams(window.location.search).has("raf");
+	const speedScale = lowPowerMode ? 0.5 : 1;
 	const waxml = window.webAudioXML;
 	const musicToggle = document.querySelector("#music-toggle");
 	const feelingToggle = document.querySelector("#feeling-toggle");
@@ -8,7 +12,6 @@
 	let musicMode = "A";
 	let startBallMotion = () => {};
 	let resetToSingleBall = () => {};
-	const debugAudioTriggers = new URLSearchParams(window.location.search).has("debugAudio");
 	const audioTriggerLog = [];
 	const recentTriggerTimes = [];
 	window.audioTriggerLog = audioTriggerLog;
@@ -18,8 +21,6 @@
 	};
 
 	function logAudioTrigger(selector, details = {}) {
-		if (!debugAudioTriggers) return;
-
 		const elapsedMs = performance.now();
 		while (recentTriggerTimes.length && recentTriggerTimes[0] < elapsedMs - 1000) {
 			recentTriggerTimes.shift();
@@ -113,7 +114,7 @@
 		let motionStarted = false;
 		let currentBallCount = Number(countButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.count) || 1;
 		let currentSize = Number(sizeButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.size) || 60;
-		let currentSpeed = Number(speedButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.speed) / 100 || 1;
+		let currentSpeed = (Number(speedButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.speed) / 100 || 1) * speedScale;
 		let states = [];
 		let simulationVersion = 0;
 		const sizeAnimations = new WeakMap();
@@ -189,6 +190,10 @@
 		}
 
 		function holdAtPosition(state) {
+			if (rafMode) {
+				renderState(state);
+				return;
+			}
 			state.targetX = state.x;
 			state.targetY = state.y;
 			state.animation = state.circle.animate(
@@ -299,7 +304,7 @@
 		};
 
 		function selectSpeed(button) {
-			const nextSpeed = Number(button.dataset.speed) / 100;
+			const nextSpeed = Number(button.dataset.speed) / 100 * speedScale;
 			const speedRatio = nextSpeed / currentSpeed;
 			currentSpeed = nextSpeed;
 			speedButtons.forEach(speedButton => {
@@ -324,7 +329,7 @@
 			if (!audioDisabled && waxmlReady && waxml && stinger) {
 				const ball = [...state.circle.classList].find(className => className.startsWith("ball-") && !className.includes("button"));
 				const selector = `#${stinger}`;
-				if (debugAudioTriggers) logAudioTrigger(selector, { event, ball, mode: musicMode });
+				logAudioTrigger(selector, { event, ball, mode: musicMode });
 				waxml.trig(selector);
 			}
 		}
@@ -428,6 +433,10 @@
 		}
 
 		function animateToNextEvent(version) {
+			if (rafMode) {
+				states.forEach(renderState);
+				return;
+			}
 			if (!states.length || version !== simulationVersion) return;
 			const { seconds, events } = nextEvents();
 			if (!Number.isFinite(seconds)) return;
@@ -480,10 +489,57 @@
 			});
 		}
 
+		function renderState(state) {
+			state.circle.style.transform = `translate3d(${state.x}px, ${state.y}px, 0)`;
+		}
+
+		function advanceStates(seconds, events) {
+			states.forEach(state => {
+				state.x += state.velocityX * seconds;
+				state.y += state.velocityY * seconds;
+			});
+			events.forEach(event => {
+				if (event.type !== "wall") return;
+				if (event.axis === "x") event.state.x = event.state.velocityX > 0 ? event.state.maxX : event.state.minX;
+				else event.state.y = event.state.velocityY > 0 ? event.state.maxY : event.state.minY;
+			});
+			// Avrundning kan annars släppa ut en boll ur fältet.
+			states.forEach(state => {
+				state.x = Math.min(state.maxX, Math.max(state.minX, state.x));
+				state.y = Math.min(state.maxY, Math.max(state.minY, state.y));
+			});
+		}
+
+		function stepSimulation(dt) {
+			let remaining = dt;
+			for (let step = 0; step < 32 && remaining > 0; step++) {
+				const { seconds, events } = nextEvents();
+				if (seconds > remaining) {
+					advanceStates(remaining, []);
+					return;
+				}
+				advanceStates(seconds, events);
+				resolveEvents(events);
+				remaining -= seconds;
+			}
+		}
+
+		let lastFrameTime = null;
+
+		function frame(now) {
+			const dt = lastFrameTime === null ? 0 : Math.min((now - lastFrameTime) / 1000, 0.1);
+			lastFrameTime = now;
+			stepSimulation(dt);
+			states.forEach(renderState);
+			requestAnimationFrame(frame);
+		}
+
 		startBallMotion = () => {
 			if (motionStarted) return;
 			motionStarted = true;
-			if (!reducedMotion) animateToNextEvent(simulationVersion);
+			if (reducedMotion) return;
+			if (rafMode) requestAnimationFrame(frame);
+			else animateToNextEvent(simulationVersion);
 		};
 
 		circles.forEach(circle => applyBallSize(circle, currentSize));
@@ -497,6 +553,5 @@
 			button.addEventListener("click", () => selectBallSize(button));
 		});
 		updateVisibleBalls();
-		new ResizeObserver(resizeBalls).observe(playfield);
 	}, { once: true });
 })();
