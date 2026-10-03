@@ -13567,10 +13567,13 @@ WebAudio.prototype.noteOff = WebAudio.prototype.release;
 
 
 
-let webAudioXML = new WebAudio();
-
-window.webAudioXML = webAudioXML;
-window.waxml = webAudioXML;
+const noAudioMode = new URLSearchParams(window.location.search).has("noAudio");
+let webAudioXML;
+if (!noAudioMode) {
+	webAudioXML = new WebAudio();
+	window.webAudioXML = webAudioXML;
+	window.waxml = webAudioXML;
+}
 module.exports = WebAudio;
 
 

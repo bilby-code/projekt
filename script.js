@@ -1,8 +1,9 @@
 (() => {
+	const audioDisabled = new URLSearchParams(window.location.search).has("noAudio");
 	const waxml = window.webAudioXML;
 	const musicToggle = document.querySelector("#music-toggle");
 	const feelingToggle = document.querySelector("#feeling-toggle");
-	let waxmlReady = false;
+	let waxmlReady = audioDisabled;
 	let musicPlaying = false;
 	let musicMode = "A";
 	let startBallMotion = () => {};
@@ -55,11 +56,13 @@
 			if (!waxmlReady) return;
 
 			if (musicPlaying) {
-				waxml.stop(`.${musicMode}`);
+				if (waxml) waxml.stop(`.${musicMode}`);
 				updateMusicToggle(false);
 			} else {
-				if (debugAudioTriggers) logAudioTrigger(`.${musicMode}`, { event: "music-start", mode: musicMode });
-				waxml.trig(`.${musicMode}`);
+				if (waxml) {
+					if (debugAudioTriggers) logAudioTrigger(`.${musicMode}`, { event: "music-start", mode: musicMode });
+					waxml.trig(`.${musicMode}`);
+				}
 				updateMusicToggle(true);
 				startBallMotion();
 			}
@@ -70,12 +73,14 @@
 		feelingToggle.addEventListener("click", () => {
 			if (!waxmlReady) return;
 
-			if (musicPlaying) waxml.stop(`.${musicMode}`);
+			if (musicPlaying && waxml) waxml.stop(`.${musicMode}`);
 			resetToSingleBall();
 			musicMode = musicMode === "A" ? "B" : "A";
 			updatePlayfieldMode();
-			if (debugAudioTriggers) logAudioTrigger(`.${musicMode}`, { event: "feeling-switch", mode: musicMode });
-			waxml.trig(`.${musicMode}`);
+			if (waxml) {
+				if (debugAudioTriggers) logAudioTrigger(`.${musicMode}`, { event: "feeling-switch", mode: musicMode });
+				waxml.trig(`.${musicMode}`);
+			}
 			updateMusicToggle(true);
 			startBallMotion();
 		});
@@ -86,6 +91,8 @@
 			waxmlReady = true;
 			updateMusicToggle(false);
 		}, { once: true });
+	} else if (audioDisabled) {
+		updateMusicToggle(false);
 	}
 
 	const playfield = document.querySelector("#ball-playfield");
@@ -314,7 +321,7 @@
 
 		function triggerStinger(state, event) {
 			const stinger = state.circle.dataset[`stinger${musicMode}`];
-			if (waxmlReady && stinger) {
+			if (!audioDisabled && waxmlReady && waxml && stinger) {
 				const ball = [...state.circle.classList].find(className => className.startsWith("ball-") && !className.includes("button"));
 				const selector = `#${stinger}`;
 				if (debugAudioTriggers) logAudioTrigger(selector, { event, ball, mode: musicMode });
