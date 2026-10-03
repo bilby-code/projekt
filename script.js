@@ -2,11 +2,14 @@
 	const audioDisabled = new URLSearchParams(window.location.search).has("noAudio");
 	const lowPowerMode = new URLSearchParams(window.location.search).has("lowPower");
 	const debugAudioTriggers = new URLSearchParams(window.location.search).has("debugAudio");
-	const rafMode = new URLSearchParams(window.location.search).has("raf");
+	const rafMode = !new URLSearchParams(window.location.search).has("waapi");
 	const showFps = new URLSearchParams(window.location.search).has("fps");
 	const flatMode = new URLSearchParams(window.location.search).has("flat");
 	const speedScale = lowPowerMode ? 0.5 : 1;
-	const motionStartDelayMs = 500;
+	const stingerMinGapMs = 90;
+	const stingerBurstWindowMs = 50;
+	const stingerBurstMax = 4;
+	const stingerTimes = [];
 	const waxml = window.webAudioXML;
 	const musicToggle = document.querySelector("#music-toggle");
 	const feelingToggle = document.querySelector("#feeling-toggle");
@@ -158,7 +161,6 @@
 	window.addEventListener("load", () => {
 		const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 		let motionStarted = false;
-		let motionStartPending = false;
 		let currentBallCount = Number(countButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.count) || 1;
 		let currentSize = Number(sizeButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.size) || 60;
 		let currentSpeed = (Number(speedButtons.find(button => button.getAttribute("aria-pressed") === "true")?.dataset.speed) / 100 || 1) * speedScale;
@@ -216,6 +218,7 @@
 				targetY: y,
 				velocityX: Math.cos(angle) * speed,
 				velocityY: Math.sin(angle) * speed,
+				lastStingerTime: -Infinity,
 				animation: null
 			};
 		}
@@ -374,6 +377,12 @@
 		function triggerStinger(state, event) {
 			const stinger = state.circle.dataset[`stinger${musicMode}`];
 			if (!audioDisabled && waxmlReady && waxml && stinger) {
+				const now = performance.now();
+				if (now - state.lastStingerTime < stingerMinGapMs) return;
+				while (stingerTimes.length && stingerTimes[0] < now - stingerBurstWindowMs) stingerTimes.shift();
+				if (stingerTimes.length >= stingerBurstMax) return;
+				stingerTimes.push(now);
+				state.lastStingerTime = now;
 				const ball = [...state.circle.classList].find(className => className.startsWith("ball-") && !className.includes("button"));
 				const selector = `#${stinger}`;
 				logAudioTrigger(selector, { event, ball, mode: musicMode });
@@ -584,15 +593,11 @@
 		}
 
 		startBallMotion = () => {
-			if (motionStarted || motionStartPending) return;
-			motionStartPending = true;
-			// Låter loopen starta innan första träffens stingers tävlar om processorn.
-			setTimeout(() => {
-				motionStarted = true;
-				if (reducedMotion) return;
-				if (rafMode) requestAnimationFrame(frame);
-				else animateToNextEvent(simulationVersion);
-			}, motionStartDelayMs);
+			if (motionStarted) return;
+			motionStarted = true;
+			if (reducedMotion) return;
+			if (rafMode) requestAnimationFrame(frame);
+			else animateToNextEvent(simulationVersion);
 		};
 
 		circles.forEach(circle => applyBallSize(circle, currentSize));
